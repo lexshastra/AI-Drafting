@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Simple document editor built with React"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>Document Editor</title>
+    
+    <!-- Replace ProseMirror CDN imports with UMD builds that don't use ES6 imports -->
+    <script src="https://unpkg.com/prosemirror-model@1.19.3/dist/prosemirror-model.js"></script>
+    <script src="https://unpkg.com/prosemirror-state@1.4.3/dist/prosemirror-state.js"></script>
+    <script src="https://unpkg.com/prosemirror-view@1.30.2/dist/prosemirror-view.js"></script>
+    <script src="https://unpkg.com/prosemirror-transform@1.7.4/dist/prosemirror-transform.js"></script>
+    <script src="https://unpkg.com/prosemirror-commands@1.5.1/dist/prosemirror-commands.js"></script>
+
+    <!-- Add print stylesheet -->
+    <link rel="stylesheet" href="%PUBLIC_URL%/print.css" media="print">
+
+    <!-- Add html-docx-js library with proper script loading -->
+    <script>
+      // Check if the library is already loaded
+      window.htmlDocxLoaded = false;
+      
+      // Function to load html-docx-js library
+      function loadHtmlDocx() {
+        if (window.htmlDocxLoaded) return;
+        
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.js';
+        script.async = true;
+        
+        script.onload = function() {
+          console.log('html-docx-js library loaded successfully');
+          window.htmlDocxLoaded = true;
+          // Dispatch a custom event when library is loaded
+          window.dispatchEvent(new CustomEvent('htmlDocxLoaded'));
+        };
+        
+        script.onerror = function(err) {
+          console.error('Failed to load html-docx-js library:', err);
+        };
+        
+        document.head.appendChild(script);
+      }
+      
+      // Load the library immediately
+      loadHtmlDocx();
+      
+      // Expose library check function
+      window.isHtmlDocxLoaded = function() {
+        return window.htmlDocxLoaded && typeof window.htmlDocx === 'object';
+      };
+    </script>
+
+    <!-- Simple editor helper -->
+    <script>
+      // Helper function to check if ProseMirror libraries loaded correctly
+      window.isProseMirrorLoaded = function() {
+        return (
+          typeof window.prosemirrorModel !== 'undefined' &&
+          typeof window.prosemirrorState !== 'undefined' &&
+          typeof window.prosemirrorView !== 'undefined'
+        );
+      };
+      
+      // Make libraries available to window if they're in UMD format
+      window.ProseMirrorModel = window.prosemirrorModel;
+      window.ProseMirrorState = window.prosemirrorState;
+      window.ProseMirrorView = window.prosemirrorView;
+      window.ProseMirrorTransform = window.prosemirrorTransform;
+      window.ProseMirrorCommands = window.prosemirrorCommands;
+      
+      // Create a simple fallback editor that doesn't rely on ProseMirror
+      window.createSimpleEditor = function(container) {
+        try {
+          if (!container) {
+            console.error("Container element not provided");
+            return { success: false, error: "No container element" };
+          }
+          
+          // Make container editable directly as a fallback
+          container.contentEditable = true;
+          container.style.border = "1px solid #ccc";
+          container.style.padding = "10px";
+          container.style.minHeight = "100px";
+          container.style.backgroundColor = "white";
+          container.innerHTML = "<p>Start typing here...</p>";
+          
+          return { success: true };
+        } catch (e) {
+          console.error("Error creating simple editor:", e);
+          return { success: false, error: e.message };
+        }
+      };
+
+      // Log ProseMirror initialization
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log("ProseMirror libraries loaded:", window.isProseMirrorLoaded());
+        if (!window.isProseMirrorLoaded()) {
+          console.warn("ProseMirror libraries not loaded correctly. Will use fallback editor.");
+        }
+      });
+    </script>
+
+    <!-- Update diagnostics script for better error handling -->
+    <script>
+      window.editorDiagnostics = {
+        checkEditorFunctionality: function() {
+          try {
+            const proseMirror = document.querySelector('.ProseMirror');
+            if (!proseMirror) {
+              const containers = document.querySelectorAll('[data-testid="editor-container"]');
+              console.error("ProseMirror editor not found in DOM", { 
+                containerCount: containers.length,
+                containersEmpty: Array.from(containers).map(c => c.childNodes.length === 0)
+              });
+              return {success: false, error: "Editor not found"};
+            }
+            
+            const diagnostics = {
+              isContentEditable: proseMirror.getAttribute('contenteditable') === 'true',
+              isHidden: proseMirror.offsetHeight === 0 || proseMirror.offsetWidth === 0,
+              hasEventListeners: "Cannot detect in this browser",
+              hasFocus: document.activeElement === proseMirror,
+              zIndex: window.getComputedStyle(proseMirror).zIndex,
+              isAttached: document.body.contains(proseMirror),
+              isVisible: window.getComputedStyle(proseMirror).display !== 'none',
+              hasPosition: window.getComputedStyle(proseMirror).position,
+              parentInfo: proseMirror.parentElement ? {
+                id: proseMirror.parentElement.id,
+                className: proseMirror.parentElement.className,
+                isVisible: window.getComputedStyle(proseMirror.parentElement).display !== 'none'
+              } : 'No parent'
+            };
+            
+            console.table(diagnostics);
+            return {success: true, data: diagnostics};
+          } catch (error) {
+            console.error("Error in editor diagnostics:", error);
+            return {success: false, error: error.message};
+          }
+        },
+        getEditorInfo: function() {
+          const info = {
+            containers: document.querySelectorAll('[data-testid="editor-container"]').length,
+            proseMirror: document.querySelectorAll('.ProseMirror').length,
+            reactRoot: document.getElementById('root') ? true : false,
+            route: window.location.pathname
+          };
+          console.log("Editor environment info:", info);
+          return info;
+        },
+        // Safety wrapper for error-prone operations
+        tryCatch: function(fn, fallback = null) {
+          try {
+            return fn();
+          } catch (error) {
+            console.error('Operation failed:', error);
+            return fallback;
+          }
+        },
+        checkDocxExportCapability: function() {
+          return {
+            htmlDocxAvailable: typeof window.htmlDocx !== 'undefined',
+            htmlDocxLoaded: window.htmlDocxLoaded || false,
+            blobSupported: typeof Blob !== 'undefined',
+            fileAPISupported: typeof File !== 'undefined' && typeof FileReader !== 'undefined'
+          };
+        },
+        
+        // Helper function to reload libraries
+        reloadLibraries: function() {
+          loadHtmlDocx();
+          return 'Attempted to reload libraries';
+        }
+      };
+      
+      // Automatically run diagnostics when the page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log("Page loaded, checking for editor after delay...");
+        setTimeout(() => {
+          window.editorDiagnostics.getEditorInfo();
+        }, 2000);
+      });
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!-- In case of editor issues, run in browser console: window.editorDiagnostics.checkEditorFunctionality() -->
+
+    <!-- Container health check and creation fallback -->
+    <script>
+      // This script runs after page load to ensure editor container exists
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          // Check if we're on editor page
+          if (window.location.pathname.includes('/editor/')) {
+            console.log('Checking editor container existence...');
+            
+            // Look for editor container
+            const editorContainer = document.querySelector('[data-testid="editor-container"]');
+            if (!editorContainer) {
+              console.warn('Editor container not found, creating fallback container');
+              
+              // Find a suitable parent element
+              const appRoot = document.getElementById('root');
+              if (appRoot) {
+                // Create a fallback container as a last resort
+                const fallbackContainer = document.createElement('div');
+                fallbackContainer.setAttribute('data-testid', 'editor-container-fallback');
+                fallbackContainer.style.cssText = 'margin-top:70px; min-height:500px; padding:20px; border:1px solid #ddd; background:white;';
+                fallbackContainer.innerHTML = '<p>Editor initializing...</p>';
+                appRoot.appendChild(fallbackContainer);
+                
+                console.log('Added fallback container to the DOM');
+              }
+            } else {
+              console.log('Editor container exists with dimensions:', 
+                editorContainer.offsetWidth + 'x' + editorContainer.offsetHeight);
+            }
+          }
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,89 @@
+/* Print Stylesheet for the Word Editor */
+
+@media print {
+  /* Reset page margins and background */
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: white !important;
+  }
+  
+  /* Hide interface elements when printing */
+  .ribbon,
+  .document-info-bar,
+  .editor-footer {
+    display: none !important;
+  }
+  
+  /* Define A4 page size for printing */
+  .a4-page {
+    width: 210mm !important;
+    height: 297mm !important;
+    padding: 25mm 20mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: white !important;
+    page-break-after: always !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Fix page size for printing */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  
+  /* Allow content to flow naturally through pages */
+  .content-editable-editor {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Ensure page numbers appear correctly */
+  .page-number {
+    position: fixed !important;
+    bottom: 10mm !important;
+    width: 100% !important;
+    text-align: center !important;
+    font-size: 10pt !important;
+    color: #333 !important;
+  }
+  
+  /* Adjust container to fit printed page */
+  .editor-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+  
+  /* Hide continuation pages special effects */
+  .continuation-page::before {
+    display: none !important;
+  }
+  
+  /* Fix content appearance on continuation pages */
+  .continuation-page {
+    visibility: visible !important;
+    height: auto !important;
+  }
+  
+  /* Make sure all text is visible */
+  * {
+    overflow: visible !important;
+  }
+  
+  /* Fix page break indicators */
+  .page-break-indicator {
+    page-break-after: always !important;
+    page-break-before: always !important;
+    break-after: page !important;
+    break-before: page !important;
+  }
+  
+  /* Hide page counters during print */
+  .page-counter {
+    display: none !important;
+  }
+}

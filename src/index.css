@@ -1,0 +1,680 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5; /* Light gray background like MS Word */
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Overall layout like MS Word */
+.editor-app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Improved ribbon styling to look more like a word processor */
+.ribbon {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  z-index: 1000;
+  padding: 5px;
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  overflow-x: auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Ribbon group styling */
+.ribbon-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 80px;
+  height: 100%;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.ribbon-group:hover {
+  background-color: #f0f0f0;
+}
+
+.ribbon-title {
+  font-size: 11px;
+  color: #666;
+  text-align: center;
+  margin-top: auto;
+  padding-top: 2px;
+}
+
+.ribbon-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+  margin-bottom: 2px;
+}
+
+.ribbon-divider {
+  width: 1px;
+  height: calc(100% - 10px);
+  background-color: #ddd;
+  margin: 5px 2px;
+}
+
+/* Button styling for ribbon */
+.ribbon button {
+  height: 28px;
+  min-width: 28px;
+  padding: 0 6px;
+  background: white;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-size: 13px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.ribbon button:hover {
+  background-color: #f0f0f0;
+  border-color: #ccc;
+}
+
+.ribbon button.active {
+  background-color: #e1f5fe;
+  border-color: #81d4fa;
+  color: #0277bd;
+}
+
+/* Button groups for related controls */
+.button-group {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.button-group button {
+  border-radius: 0;
+  border: none;
+  border-right: 1px solid #ddd;
+  height: 28px;
+  margin: 0;
+}
+
+.button-group button:last-child {
+  border-right: none;
+}
+
+/* Dropdown styling */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-trigger::after {
+  content: "▾";
+  margin-left: 3px;
+  font-size: 10px;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 140px; /* Slightly wider to accommodate "Word (.docx)" text */
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+  border-radius: 3px;
+  padding: 4px 0;
+}
+
+.dropdown-content button {
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  display: block;
+  border-radius: 0;
+  height: auto;
+}
+
+.dropdown-content button:hover {
+  background-color: #f0f0f0;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Select boxes in ribbon */
+.ribbon select {
+  height: 28px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background-color: white;
+  margin: 0;
+  padding: 0 5px;
+}
+
+/* Save status indicator */
+.save-status {
+  margin-left: auto;
+  padding-right: 10px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.status-saving {
+  color: #666;
+}
+
+.status-saved {
+  color: #2e7d32;
+}
+
+.status-error {
+  color: #c62828;
+}
+
+/* Alignment icons */
+.icon-align-left,
+.icon-align-center,
+.icon-align-right,
+.icon-align-justify {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.icon-align-left::before {
+  content: "\2630"; /* Unicode for left align */
+  display: inline-block;
+  transform: rotate(180deg);
+}
+
+.icon-align-center::before {
+  content: "\2261"; /* Unicode for center align */
+}
+
+.icon-align-right::before {
+  content: "\2630"; /* Unicode for right align */
+}
+
+.icon-align-justify::before {
+  content: "\2261"; /* Unicode for justify */
+  letter-spacing: -1px;
+}
+
+/* Update editor container to account for taller ribbon */
+.editor-container {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #f5f5f5; /* Light gray background like MS Word */
+  min-height: calc(100vh - 70px); /* Full height minus ribbon + margin */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  margin-top: 90px; /* Increased to account for taller ribbon */
+  overflow-y: auto;
+}
+
+/* A4 Page Style - Improved to maintain exact dimensions */
+.a4-page {
+  width: 210mm; /* A4 width */
+  height: 297mm; /* Fixed exact height */
+  padding: 25mm 20mm; /* Standard A4 margins */
+  background-color: white;
+  box-shadow: 0 3px 10px rgba(151, 145, 145, 0.663);
+  margin: 0 auto 20px auto;
+  box-sizing: border-box;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden; /* Critical: prevent content from flowing out */
+  break-inside: avoid;
+  page-break-after: always;
+}
+
+/* Make multiple pages look like separate sheets */
+.a4-page + .a4-page {
+  margin-top: 20px;
+}
+
+/* Word count and document info bar */
+.document-info-bar {
+  width: 210mm;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  padding: 5px 10px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+  margin: 0 auto 20px auto;
+  box-sizing: border-box;
+}
+
+/* Page number indicator */
+.page-number {
+  position: absolute;
+  bottom: 10mm;
+  right: 0;
+  left: 0;
+  text-align: center;
+  font-size: 10pt;
+  color: #999;
+  pointer-events: none;
+}
+
+/* Editor Footer */
+.editor-footer {
+  display: flex;
+  justify-content: space-between;
+  width: 210mm;
+  margin: 0 auto 20px auto;
+  padding: 10px 0;
+  border-top: 1px solid #eee;
+  font-size: 14px;
+  color: #666;
+}
+
+.copy-button {
+  padding: 4px 8px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* ContentEditable Editor styles - Improved */
+.content-editable-editor {
+  width: 100%;
+  height: 247mm; /* Exact height (A4 height minus margins) */
+  outline: none;
+  font-family: 'Times New Roman', serif;
+  font-size: 12pt;
+  line-height: 1.6;
+  color: #333;
+  position: relative;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  user-select: text;
+}
+
+.content-editable-editor:focus {
+  outline: none;
+}
+
+.content-editable-editor h1 {
+  font-size: 28px;
+  margin: 16px 0;
+  font-weight: 600;
+}
+
+.content-editable-editor h2 {
+  font-size: 24px;
+  margin: 14px 0;
+  font-weight: 600;
+}
+
+.content-editable-editor h3 {
+  font-size: 20px;
+  margin: 12px 0;
+  font-weight: 600;
+}
+
+.content-editable-editor p {
+  margin: 10px 0;
+}
+
+.content-editable-editor ul, 
+.content-editable-editor ol {
+  margin: 10px 0;
+  padding-left: 30px;
+}
+
+.content-editable-editor blockquote {
+  border-left: 3px solid #ccc;
+  padding-left: 10px;
+  margin-left: 0;
+  color: #555;
+}
+
+.content-editable-editor a {
+  color: #ffffff00;
+  text-decoration: underline;
+}
+
+/* Fix Word/Office pasted content */
+.content-editable-editor span[style*="mso-"] {
+  font-family: 'Times New Roman', serif !important;
+  font-size: 12pt !important;
+  line-height: 1.6 !important;
+  color: #333 !important;
+  background-color: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Override Word list styling */
+.content-editable-editor li.MsoListParagraph {
+  margin-left: 0 !important;
+}
+
+/* Fix MS Word Table Layouts */
+.content-editable-editor table[border="1"] {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.content-editable-editor table[border="1"] td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+/* Multi-page support */
+/* First page contains all content, but limits visible area */
+.a4-page:first-of-type .content-editable-editor {
+  overflow: hidden;
+  position: relative;
+}
+
+/* Continuation pages show content that flows from previous pages */
+.continuation-page {
+  height: 247mm;
+  visibility: hidden; /* Make the content invisible but keep the layout */
+}
+
+/* Special rules to visually simulate content flowing to the next page */
+.a4-page:nth-of-type(2) .continuation-page {
+  visibility: visible;
+  position: relative;
+}
+
+.a4-page:nth-of-type(2) .continuation-page::before {
+  content: '';
+  position: absolute;
+  top: -247mm; /* Move up to see the content from the "first" page */
+  left: 0;
+  width: 100%;
+  height: 494mm; /* Double height to capture overflow content */
+  pointer-events: none;
+}
+
+/* Apply a special class to each page to position content correctly */
+.a4-page:nth-of-type(3) .continuation-page::before { top: -494mm; }
+.a4-page:nth-of-type(4) .continuation-page::before { top: -741mm; }
+.a4-page:nth-of-type(5) .continuation-page::before { top: -988mm; }
+.a4-page:nth-of-type(6) .continuation-page::before { top: -1235mm; }
+.a4-page:nth-of-type(7) .continuation-page::before { top: -1482mm; }
+.a4-page:nth-of-type(8) .continuation-page::before { top: -1729mm; }
+.a4-page:nth-of-type(9) .continuation-page::before { top: -1976mm; }
+.a4-page:nth-of-type(10) .continuation-page::before { top: -2223mm; }
+
+/* Pagination visual indicators */
+.page-break-indicator {
+  display: block;
+  border-top: 2px dashed #3182ce;
+  border-bottom: 2px dashed #3182ce;
+  margin: 15px 0;
+  position: relative;
+  height: 24px;
+  background-color: #ebf8ff;
+  text-align: center;
+  color: #2b6cb0;
+  font-size: 12px;
+  line-height: 24px;
+  font-weight: bold;
+  page-break-before: always;
+  page-break-after: always;
+  clear: both;
+  width: 100%;
+}
+
+.page-break-indicator::before,
+.page-break-indicator::after {
+  content: "✂";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #3182ce;
+}
+
+.page-break-indicator::before {
+  left: 10px;
+}
+
+.page-break-indicator::after {
+  right: 10px;
+}
+
+/* Multi-page improvements */
+.a4-page.page-container {
+  display: block;
+  width: 210mm;
+  height: 297mm; /* Fixed height */
+  overflow: hidden; /* Hide overflow */
+}
+
+/* Show actual content in each page */
+.a4-page .content-visible {
+  min-height: 0;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  display: block;
+  visibility: visible;
+}
+
+/* Page content styling */
+.page-content {
+  min-height: 247mm;
+  position: relative;
+}
+
+/* Page counter styling */
+.page-counter {
+  position: absolute;
+  bottom: 5mm;
+  right: 5mm;
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10pt;
+  border: 1px solid #ddd;
+  z-index: 10;
+}
+
+/* For actual printing */
+@media print {
+  .a4-page {
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+    break-after: page;
+  }
+
+  .editor-container {
+    background-color: white;
+    padding: 0;
+  }
+
+  .ribbon, .editor-footer, .document-info-bar {
+    display: none;
+  }
+}
+
+/* App container */
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fix for mobile devices */
+@media (max-width: 768px) {
+  .a4-page {
+    width: 100%;
+    max-width: 210mm;
+    padding: 15mm 10mm;
+  }
+  
+  .document-info-bar {
+    width: 100%;
+    max-width: 210mm;
+  }
+  
+  .editor-footer {
+    width: 100%;
+    max-width: 210mm;
+    padding: 10px;
+  }
+}
+
+/* Make all pages editable */
+.content-editable {
+  min-height: 247mm;
+  height: auto;
+  outline: none;
+  visibility: visible !important;
+  background-color: white;
+  /* Prevent default text selection */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Class to prevent automatic text selection */
+.no-auto-select {
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
+}
+
+/* Remove default focus styling that causes selection */
+.content-editable-editor:focus {
+  outline: none; 
+}
+
+/* Fix the clicking behavior to prevent automatic selection */
+.a4-page .content-editable {
+  padding: 0;
+  margin: 0;
+  display: block;
+  cursor: text;
+}
+
+/* Reduce visible focus indicators */
+.content-editable-editor:focus::selection {
+  background: rgba(66, 153, 225, 0.1);
+}
+
+/* Show actually editable content in each page */
+.a4-page .content-editable {
+  padding: 0;
+  margin: 0;
+  display: block;
+}
+
+/* Visual indication of which page is being edited */
+.content-editable-editor:focus {
+  outline: 2px solid #ffffff00; /* Add a visible focus indicator */
+}
+
+/* Additional page-specific styling for better editing */
+.a4-page .page-content {
+  min-height: 247mm;
+  height: auto; 
+  outline: none;
+  visibility: visible;
+  background-color: white;
+  cursor: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Fix visibility for continuation pages */
+.content-visible {
+  visibility: visible !important;
+  display: block !important;
+  height: auto !important;
+}
+
+/* Properly style page-break indicators */
+.page-break-indicator {
+  display: block;
+  border-top: 2px dashed #3182ce;
+  border-bottom: 2px dashed #3182ce;
+  margin: 15px 0;
+  position: relative;
+  height: 24px;
+  background-color: #ebf8ff;
+  text-align: center;
+  color: #2b6cb0;
+  font-size: 12px;
+  line-height: 24px;
+  font-weight: bold;
+  page-break-before: always;
+  page-break-after: always;
+  clear: both;
+  width: 100%;
+}
+
+/* Make pagination visually clearer */
+.page-counter {
+  position: absolute;
+  bottom: 5mm;
+  right: 5mm;
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10pt;
+  border: 1px solid #ddd;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Enhance page focus styling */
+.content-editable-editor:focus {
+  box-shadow: inset 0 0 0 1px rgba(66, 153, 225, 0);
+  outline: none;
+}

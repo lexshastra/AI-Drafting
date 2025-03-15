@@ -1,0 +1,84 @@
+/* Print Stylesheet for the Word Editor */
+
+@media print {
+  /* Reset page margins and background */
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: white;
+  }
+  
+  /* Hide interface elements when printing */
+  .ribbon,
+  .document-info-bar,
+  .editor-footer {
+    display: none !important;
+  }
+  
+  /* Define A4 page size for printing */
+  .a4-page {
+    width: 210mm;
+    height: 297mm;
+    padding: 25mm 20mm;
+    margin: 0;
+    box-shadow: none;
+    background: white;
+    page-break-after: always;
+    box-sizing: border-box;
+    overflow: visible;
+  }
+  
+  /* Show page break indicators */
+  .page-break-indicator {
+    break-after: page;
+    page-break-after: always;
+    height: 0;
+    padding: 0;
+    border: none;
+    margin: 0;
+  }
+  
+  /* Allow content to flow naturally through pages */
+  .content-editable-editor {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    min-height: 0;
+  }
+  
+  /* Ensure all content is visible */
+  .a4-page .content-editable-editor,
+  .a4-page .content-visible {
+    min-height: 0;
+    height: auto;
+    visibility: visible !important;
+  }
+  
+  /* Ensure page numbers appear correctly */
+  .page-number {
+    position: absolute;
+    bottom: 10mm;
+    width: 100%;
+    text-align: center;
+    font-size: 10pt;
+    color: #333;
+  }
+  
+  /* Adjust container to fit printed page */
+  .editor-container {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+  
+  /* Hide continuation pages special effects */
+  .continuation-page::before {
+    display: none !important;
+  }
+  
+  /* Fix content appearance on continuation pages */
+  .continuation-page {
+    visibility: visible;
+    height: auto;
+  }
+}
